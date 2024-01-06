@@ -1,9 +1,18 @@
 import { useState } from "react";
-import { ChatBubble, Me, TextMessageBox, TypingLoader } from "../../components";
+import {
+  ChatBubble,
+  Me,
+  TextMessageBox,
+  TypingLoader,
+  OrthographyBubble,
+} from "../../components";
+import AssistantHandler from "../../AssistantHandler";
+import { OrthographyResponse } from "../../interfaces";
 
 interface Message {
   text: string;
   isGpt: boolean;
+  info?: OrthographyResponse;
 }
 
 export const OrthographyPage = () => {
@@ -13,12 +22,29 @@ export const OrthographyPage = () => {
   const handlePost = async (text: string) => {
     setIsLoading(true);
     setMessages((prev) => [...prev, { text: text, isGpt: false }]);
-
-    //TODO: UseCase
+    const { message, errors, userScore, ok } =
+      await AssistantHandler.OrthographyUseCase(text);
+    if (!ok) {
+      setMessages((prev) => [
+        ...prev,
+        { text: "No se pudo realizar la conexión", isGpt: true },
+      ]);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        {
+          isGpt: true,
+          text: message,
+          info: {
+            errors,
+            message,
+            userScore,
+          },
+        },
+      ]);
+    }
 
     setIsLoading(false);
-
-    // Todo: Añadir el mensaje de isGPT en true
   };
 
   return (
@@ -30,7 +56,12 @@ export const OrthographyPage = () => {
 
           {messages.map((message, index) =>
             message.isGpt ? (
-              <ChatBubble key={index} text="Esto es de OpenAI" />
+              <OrthographyBubble
+                key={index}
+                errors={message.info?.errors || []}
+                userScore={message.info?.userScore || 0}
+                message={message.info?.message || ""}
+              />
             ) : (
               <Me key={index} text={message.text} />
             )
