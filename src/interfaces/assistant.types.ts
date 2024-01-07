@@ -8,3 +8,5 @@ export interface ProsConsDiscussion {
   role: string;
   content: string;
 }
+
+export interface ProsConsDiscussionStream {}

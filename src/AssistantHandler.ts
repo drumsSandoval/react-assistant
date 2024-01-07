@@ -60,6 +60,42 @@ class AssistantHandler {
       };
     }
   }
+
+  static async *ProsConsDiscussionsStream(
+    prompt: string,
+    abortSignal?: AbortSignal
+  ) {
+    try {
+      const resp = await fetch(this.api + "/gpt/pros-cons-discusser-stream", {
+        method: "POST",
+        body: JSON.stringify({ prompt }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: abortSignal,
+      });
+      if (!resp.ok) {
+        throw new Error("No se pudo realizar la conexión");
+      }
+      const reader = resp.body?.getReader();
+      if (!reader) {
+        throw new Error("No se pudo generar el reader");
+      }
+      const decoder = new TextDecoder();
+      let text = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        const decodeChunk = decoder.decode(value, { stream: true });
+        text += decodeChunk;
+        yield text;
+      }
+    } catch (_) {
+      throw new Error("No se pudo generar el reader");
+    }
+  }
 }
 
 export default AssistantHandler;
