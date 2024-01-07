@@ -1,1 +1,1 @@
-export * from "./orthography.types";
+export * from "./assistant.types";

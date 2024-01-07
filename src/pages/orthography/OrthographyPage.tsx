@@ -23,7 +23,7 @@ export const OrthographyPage = () => {
     setIsLoading(true);
     setMessages((prev) => [...prev, { text: text, isGpt: false }]);
     const { message, errors, userScore, ok } =
-      await AssistantHandler.OrthographyUseCase(text);
+      await AssistantHandler.OrthographyCorrection(text);
     if (!ok) {
       setMessages((prev) => [
         ...prev,
